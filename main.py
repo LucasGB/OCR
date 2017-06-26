@@ -4,6 +4,7 @@ from sklearn import svm
 from sklearn import tree
 from scipy import spatial
 from sys import argv
+from collections import Counter
 import argparse
 import numpy  as np
 
@@ -72,7 +73,13 @@ class OCR:
 		confusionMatrix = confusion_matrix(test_labels, classified)
 		return confusionMatrix
 
-		
+	def voto_majoritario(self, classifiedKnn, classifiedSVM, classifiedDTree):
+		classified = []
+		zipped = zip(classifiedKnn, classifiedSVM, classifiedDTree)
+		for i in zipped:
+			classified.append(Counter(i).most_common(1)[0][0])
+
+		return classified
 
 
 if __name__ == '__main__':
@@ -99,7 +106,12 @@ if __name__ == '__main__':
 	test_labels = ocr.extract(testLabelsFile)
 	test_characteristics = ocr.extract(testCharacteristicsFile)
 
-	classified = ocr.decision_tree(trainning_characteristics, trainning_labels, test_characteristics)
+
+	classifiedKNN = ocr.knn(trainning_characteristics, trainning_labels, test_characteristics)
+	classifiedSVM = ocr.svm(trainning_characteristics, trainning_labels, test_characteristics)
+	classifiedDTree = ocr.decision_tree(trainning_characteristics, trainning_labels, test_characteristics)
+	
+	classified = ocr.voto_majoritario(classifiedKNN, classifiedSVM, classifiedDTree)
 
 	matrix = ocr.buildConfusionMatrix(classified, test_labels)
 
